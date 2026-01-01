@@ -30,7 +30,7 @@ El núcleo del sistema utiliza LangChain para garantizar un procesamiento agnós
 
 Tras la entrevista, el sistema procesa la transcripción y actualiza la puntuación final (ej. de un 50% inicial a un 75% si se valida un requisito extra en la charla).
 
-## 🚀 Ejecución con Docker
+## Ejecución con Docker
 
 El proyecto está completamente dockerizado para permitir una ejecución inmediata en cualquier entorno.
 
