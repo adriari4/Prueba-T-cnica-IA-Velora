@@ -22,7 +22,8 @@ st.markdown("""
         
         html, body, [class*="css"] {
             font-family: 'Inter', sans-serif;
-            color: #1f2937;
+            color: #000000;
+            font-weight: 500;
         }
 
         /* Ocultar Branding de Streamlit */
@@ -46,13 +47,13 @@ st.markdown("""
         }
         .metric-value {
             font-size: 2rem;
-            font-weight: 700;
-            color: #111827;
+            font-weight: 800;
+            color: #000000;
         }
         .metric-label {
             font-size: 0.875rem;
-            color: #6b7280;
-            font-weight: 500;
+            color: #374151;
+            font-weight: 600;
         }
 
         /* Insignias de Estado */
@@ -108,11 +109,31 @@ st.markdown("""
             padding-top: 10px;
             padding-bottom: 10px;
         }
+        /* Force Input Fields to be White with Black Text */
+        .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            border-color: #d1d5db !important;
+        }
+        /* Fix for Streamlit's dark mode defaults if active */
+        [data-baseweb="base-input"] {
+            background-color: #ffffff !important;
+            border: 1px solid #d1d5db !important;
+        }
+
+        /* Executive Summary Text Enhancement */
+        .stMarkdown p, .stMarkdown li {
+            font-size: 1.1rem !important;
+            color: #000000 !important;
+            font-weight: 500 !important;
+        }
+
+        /* Tab Visibility */
         .stTabs [aria-selected="true"] {
             background-color: transparent;
-            border-bottom: 2px solid #00C4CC;
-            color: #005F9E;
-            font-weight: 700;
+            border-bottom: 3px solid #00C4CC;
+            color: #005F9E !important;
+            font-weight: 800 !important;
         }
     </style>
 """, unsafe_allow_html=True)
