@@ -2,7 +2,7 @@
 
 Esta solución es un ecosistema de reclutamiento inteligente diseñado para automatizar la evaluación técnica de candidatos mediante modelos de lenguaje de gran escala (LLM). El sistema, orquestado con LangChain, ejecuta un flujo de dos fases: análisis autónomo de compatibilidad y entrevista interactiva de validación de requisitos.
 
-## 🏗 Arquitectura del Sistema
+## Arquitectura del Sistema
 
 El sistema sigue una arquitectura de microservicios contenerizada para garantizar escalabilidad, portabilidad y desacoplamiento técnico:
 
@@ -14,7 +14,7 @@ El sistema sigue una arquitectura de microservicios contenerizada para garantiza
 *   **Backend (`src/backend/engine.py`)**: API robusta en FastAPI que gestiona la lógica de negocio, los agentes de LangChain y el procesamiento de lenguaje natural.
 *   **Data Layer**: Persistencia local en `/data/reports/` para auditoría y consulta de resultados en formato JSON y TXT.
 
-## 🦜🔗 Lógica de Negocio y Evaluación
+##  Lógica de Negocio y Evaluación
 
 El núcleo del sistema utiliza LangChain para garantizar un procesamiento agnóstico del modelo y estructurado de la información.
 
@@ -50,7 +50,7 @@ El proyecto está completamente dockerizado para permitir una ejecución inmedia
     *   **Aplicación Web (Streamlit)**: [http://localhost:8501](http://localhost:8501)
     *   **Documentación API (FastAPI)**: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-## � Informe Ejecutivo
+## Informe Ejecutivo
 
 El evaluador dispone de un panel privado donde, al seleccionar a un candidato por su identidad, puede visualizar:
 
@@ -60,7 +60,7 @@ El evaluador dispone de un panel privado donde, al seleccionar a un candidato po
 
 Desarrollado como solución técnica de evaluación de talento.
 
-## 🔧 Desarrollo Local
+## Desarrollo Local
 
 Si prefieres correrlo sin Docker:
 
