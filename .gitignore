@@ -1,5 +1,5 @@
 # Python
-# .gitignore sanitized per user request
+
 __pycache__/
 *.py[cod]
 .venv/
