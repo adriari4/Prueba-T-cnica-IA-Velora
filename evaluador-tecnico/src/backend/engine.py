@@ -90,8 +90,8 @@ REGLAS CRÍTICAS:
 1. Identificación de Requisitos: Separa la oferta en unidades individuales.
 2. Clasificación:
     - `matching`: Cumple explícitamente.
-    - `unmatching`: No cumple explícitamente (ej. pide 5 años y tiene 1).
-    - `not_found`: No se menciona en el CV.
+    - `unmatching`: Existe EVIDENCIA CLARA Y EXPLICITA de que NO cumple (ej. pide 5 años y el CV dice "1 año", o dice "No se nada de X").
+    - `not_found`: SI NO SE MENCIONA, ES `not_found`. PROHIBIDO INFERIR QUE NO LO TIENE POR OMISIÓN. Ante la duda, SIEMPRE `not_found`.
 3. Lógica de Descarte (Fase 1):
     - Si un requisito OBLIGATORIO es `unmatching` (no cumple), `discarded` = true.
     - Si un requisito OBLIGATORIO es `not_found` (no mencionado), `discarded` = false (se preguntará en la entrevista).
