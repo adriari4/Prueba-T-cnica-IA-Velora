@@ -2,27 +2,27 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies if needed (e.g. for build tools)
+# Instalar dependencias del sistema si es necesario (ej. para herramientas de compilación)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
+# Instalar dependencias de Python
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy Project Code
+# Copiar Código del Proyecto
 COPY . /app
 
-# Expose ports
+# Exponer puertos
 EXPOSE 8501
 EXPOSE 8000
 
-# Make entrypoint executable
+# Hacer ejecutable el entrypoint
 RUN chmod +x entrypoint.sh
 
-# Environment variables
+# Variables de entorno
 ENV PYTHONUNBUFFERED=1
 
-# Command to run both services
+# Comando para ejecutar ambos servicios
 CMD ["./entrypoint.sh"]

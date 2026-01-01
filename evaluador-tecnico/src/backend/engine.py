@@ -13,50 +13,50 @@ from langchain_core.output_parsers import JsonOutputParser
 from langgraph.graph import StateGraph, END
 from dotenv import load_dotenv
 
-# Load Environment Variables
+# Cargar variables de entorno
 load_dotenv()
 
-# Initialize FastAPI
+# Inicializar FastAPI
 app = FastAPI(title="Evaluador de Talento IA - Core Engine")
 
-# Configuration
+# Configuración
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DATA_DIR = os.path.join(BASE_DIR, "data") if os.path.exists(os.path.join(BASE_DIR, "data")) else "app/data"
 
 if os.getenv("DOCKER_ENV"):
      DATA_DIR = "/app/data"
 
-# Ensure Data Directory Exists
+# Asegurar que existe el directorio de datos
 os.makedirs(DATA_DIR, exist_ok=True)
 
-# Helper to get file paths based on ID
+# Ayudante para obtener rutas de archivo basadas en ID
 def get_file_paths(eval_id: str):
     return {
         "eval": os.path.join(DATA_DIR, f"eval_{eval_id}.json"),
         "transcript": os.path.join(DATA_DIR, f"transcript_{eval_id}.txt")
     }
 
-# LLM Factory
+# Factoría de LLM
 def get_llm_model():
     """
-    Factory function to initialize the LLM based on environment variables.
-    Supports easy swapping of providers (e.g., OpenAI, Azure, Anthropic).
+    Función factoría para inicializar el LLM basado en variables de entorno.
+    Soporta el intercambio fácil de proveedores (ej. OpenAI, Azure, Anthropic).
     """
     provider = os.getenv("LLM_PROVIDER", "openai").lower()
     model_name = os.getenv("LLM_MODEL", "gpt-4o")
     
     if provider == "openai":
         return ChatOpenAI(model=model_name, temperature=0)
-    # Future providers can be added here:
+    # Aquí se pueden añadir futuros proveedores:
     # elif provider == "anthropic":
     #     return ChatAnthropic(model=model_name, temperature=0)
     else:
-        # Default to OpenAI if unknown
+        # Por defecto usar OpenAI si es desconocido
         return ChatOpenAI(model="gpt-4o", temperature=0)
 
 llm = get_llm_model()
 
-# --- MODULE 1: CV ANALYSIS ENGINE ---
+# --- MÓDULO 1: MOTOR DE ANÁLISIS DE CV ---
 
 class AnalysisResult(BaseModel):
     candidate_name: str = Field(description="Nombre completo del candidato (Explicitamente proporcionado).")
@@ -79,10 +79,10 @@ class AnalyzeRequest(BaseModel):
 async def analyze_cv(request: AnalyzeRequest):
     parser = JsonOutputParser(pydantic_object=AnalysisResult)
     
-    # Explicit Name Construction
+    # Construcción explícita del nombre
     full_name = f"{request.first_name} {request.last_name}"
     
-    # System Prompt for Phase 1
+    # Prompt del Sistema para Fase 1
     system_prompt = """
 Eres un Experto en Reclutamiento Técnico (Motor de Análisis Core). Tu objetivo es comparar una Oferta de Empleo con un CV y extraer un análisis estructurado.
 
@@ -108,26 +108,26 @@ REGLAS CRÍTICAS:
         response = llm.invoke(messages)
         result = parser.parse(response.content)
         
-        # Override/Inject Explicit Identity Data
+        # Sobrescribir/Inyectar Datos de Identidad Explícitos
         result["candidate_name"] = full_name
         result["dni"] = request.dni
         
-        # Generate Unique ID
+        # Generar ID Único
         eval_id = str(uuid.uuid4())
         paths = get_file_paths(eval_id)
         
-        # Save Initial Evaluation
+        # Guardar Evaluación Inicial
         with open(paths['eval'], "w", encoding="utf-8") as f:
             json.dump(result, f, indent=4)
             
-        # Return result with ID
+        # Devolver resultado con ID
         result["evaluation_id"] = eval_id
         return result
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# --- MODULE 2: INTERVIEW AGENT ---
+# --- MÓDULO 2: AGENTE DE ENTREVISTA ---
 
 class ChatRequest(BaseModel):
     evaluation_id: str
@@ -143,7 +143,7 @@ class ChatResponse(BaseModel):
 
 @app.post("/interview", response_model=ChatResponse)
 async def conduct_interview(request: ChatRequest):
-    # Load context specific to this ID
+    # Cargar contexto específico para este ID
     paths = get_file_paths(request.evaluation_id)
     if not os.path.exists(paths['eval']):
          raise HTTPException(status_code=404, detail="Evaluation ID not found")
@@ -166,11 +166,11 @@ INSTRUCCIONES CLAVE:
 5. Sé breve y directo.
 """
     
-    # Update Transcript
+    # Actualizar Transcripción
     with open(paths['transcript'], "a", encoding="utf-8") as f:
         f.write(f"Candidato: {request.message}\n")
 
-    # Build LangChain Messages
+    # Construir Mensajes LangChain
     messages = [SystemMessage(content=system_prompt)]
     for msg in request.history:
         if msg["role"] == "user":
@@ -182,7 +182,7 @@ INSTRUCCIONES CLAVE:
     response = llm.invoke(messages)
     ai_response = response.content
 
-    # Save Agent Response to Transcript
+    # Guardar Respuesta del Agente en Transcripción
     with open(paths['transcript'], "a", encoding="utf-8") as f:
         f.write(f"Evaluador: {ai_response}\n")
 
@@ -195,12 +195,12 @@ INSTRUCCIONES CLAVE:
 
 @app.post("/interview/start", response_model=ChatResponse)
 async def start_interview(request: StartInterviewRequest):
-    """Proactively starts the interview."""
+    """Inicia proactivamente la entrevista."""
     paths = get_file_paths(request.evaluation_id)
     if not os.path.exists(paths['eval']):
          raise HTTPException(status_code=404, detail="Evaluation ID not found")
          
-    # Init transcript
+    # Inicializar transcripción
     with open(paths['transcript'], "w", encoding="utf-8") as f:
         f.write("--- INICIO ENTREVISTA ---\n")
 
@@ -228,7 +228,7 @@ MANTÉN EL TONO PROFESIONAL.
 
 
 
-# --- MODULE 3: AUDIT AGENT (STRUCTURED OUTPUT) ---
+# --- MÓDULO 3: AGENTE DE AUDITORÍA (SALIDA ESTRUCTURADA) ---
 
 class AuditResult(BaseModel):
     evaluation: AnalysisResult
@@ -283,12 +283,12 @@ TRANSCRIPCIÓN:
         response = llm.invoke(messages)
         result = parser.parse(response.content)
         
-        # Save Final Evaluation (Overwrite initial to be main record)
-        result["evaluation"]["candidate_name"] = initial_eval_data.get("candidate_name", "Unknown") # preserve name
+        # Guardar Evaluación Final (Sobrescribir inicial para ser el registro principal)
+        result["evaluation"]["candidate_name"] = initial_eval_data.get("candidate_name", "Unknown") # preservar nombre
         
-        # Merge audit fields into the main json for persistence too? 
-        # Ideally we save the whole structure. Let's start saving the whole AuditResult structure OR merge.
-        # To keep it compatible with AnalysisResult reads elsewhere, we'll save fields into the main dict.
+        # ¿Fusionar campos de auditoría en el json principal para persistencia también? 
+        # Idealmente guardamos toda la estructura. Empezaremos guardando toda la estructura AuditResult O fusionar.
+        # Para mantener compatibilidad con lecturas de AnalysisResult en otros lugares, guardaremos campos en el dict principal.
         final_data = result["evaluation"]
         final_data["key_points"] = result.get("key_points", [])
         final_data["red_flags"] = result.get("red_flags", [])
@@ -300,11 +300,11 @@ TRANSCRIPCIÓN:
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# --- MODULE 4: EVALUATOR PANEL ----
+# --- MÓDULO 4: PANEL DEL EVALUADOR ----
 
 @app.get("/evaluations")
 async def get_all_evaluations():
-    """List all evaluations for the dashboard."""
+    """Listar todas las evaluaciones para el panel."""
     files = glob(os.path.join(DATA_DIR, "eval_*.json"))
     results = []
     
@@ -324,13 +324,13 @@ async def get_all_evaluations():
         except Exception:
             continue
             
-    # Sort by date desc
+    # Ordenar por fecha descendente
     results.sort(key=lambda x: x["timestamp"], reverse=True)
     return results
 
 @app.get("/evaluations/{evaluation_id}")
 async def get_evaluation_detail(evaluation_id: str):
-    """Get full details for a specific evaluation."""
+    """Obtener detalles completos para una evaluación específica."""
     paths = get_file_paths(evaluation_id)
     
     if not os.path.exists(paths['eval']):

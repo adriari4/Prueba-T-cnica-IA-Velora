@@ -4,20 +4,20 @@ import os
 import pandas as pd
 import time
 
-# Frontend for Sistema de Evaluación por IA - Unified System
+# Frontend para Sistema de Evaluación por IA - Sistema Unificado
 
 st.set_page_config(page_title="Sistema de Evaluación por IA", layout="wide", page_icon="⚡")
 
-# --- VELORA BRANDING & MODERN UI INJECTION ---
-# Colors approximated from Velora branding:
-# Cyan/Teal: #00C4CC
-# Dark Blue: #005F9E
-# Text: #1f2937 (Dark Gray/Black)
-# Background: White/Light Gray
+# --- BRANDING DE VELORA E INYECCIÓN DE UI MODERNA ---
+# Colores aproximados del branding de Velora:
+# Cian/Verde azulado: #00C4CC
+# Azul Oscuro: #005F9E
+# Texto: #1f2937 (Gris Oscuro/Negro)
+# Fondo: Blanco/Gris Claro
 
 st.markdown("""
     <style>
-        /* Import Google Font */
+        /* Importar Fuente Google */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         
         html, body, [class*="css"] {
@@ -25,17 +25,17 @@ st.markdown("""
             color: #1f2937;
         }
 
-        /* Hide Streamlit Branding */
+        /* Ocultar Branding de Streamlit */
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
-        [data-testid="stDecoration"] {visibility: hidden;} /* Hides the rainbow decoration */
+        [data-testid="stDecoration"] {visibility: hidden;} /* Oculta la decoración arcoíris */
         
-        /* App Background */
+        /* Fondo de la App */
         .stApp {
             background-color: #ffffff;
         }
 
-        /* Custom Cards */
+        /* Tarjetas Personalizadas */
         .metric-card {
             background-color: white;
             padding: 20px;
@@ -55,7 +55,7 @@ st.markdown("""
             font-weight: 500;
         }
 
-        /* Status Badges */
+        /* Insignias de Estado */
         .status-badge {
             display: inline-block;
             padding: 4px 12px;
@@ -72,7 +72,7 @@ st.markdown("""
             color: #991b1b;
         }
 
-        /* Velora-themed Buttons */
+        /* Botones con tema Velora */
         .stButton button {
             background: linear-gradient(90deg, #00C4CC 0%, #005F9E 100%);
             color: white;
@@ -87,7 +87,7 @@ st.markdown("""
             box-shadow: 0 4px 12px rgba(0, 196, 204, 0.3);
         }
 
-        /* Chat Styling */
+        /* Estilo del Chat */
         .stChatMessage {
             background-color: white;
             border-radius: 12px;
@@ -95,7 +95,7 @@ st.markdown("""
             border: 1px solid #f3f4f6;
         }
         
-        /* Tab Styling */
+        /* Estilo de Pestañas */
         .stTabs [data-baseweb="tab-list"] {
             gap: 24px;
         }
@@ -117,10 +117,10 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Header with Logo (simulated layout)
+# Cabecera con Logo (diseño simulado)
 col_head1, col_head2 = st.columns([1, 4])
 with col_head1:
-    # Use logo if exists, else text
+    # Usar logo si existe, si no texto
     logo_path = "evaluador-tecnico/assets/logo.png"
     if os.path.exists(logo_path):
         st.image(logo_path, width=150)
@@ -132,7 +132,7 @@ with col_head2:
 
 st.markdown("---")
 
-# Backend URL configuration
+# Configuración URL Backend
 if os.getenv("DOCKER_ENV"):
     BACKEND_HOST = "http://backend:8000"
 else:
@@ -144,7 +144,7 @@ START_INTERVIEW_URL = f"{BACKEND_HOST}/interview/start"
 AUDIT_URL = f"{BACKEND_HOST}/audit"
 EVALUATIONS_URL = f"{BACKEND_HOST}/evaluations"
 
-# Initialize Session State
+# Inicializar Session State
 if "current_eval_id" not in st.session_state:
     st.session_state.current_eval_id = None
 if "step" not in st.session_state:
@@ -154,17 +154,17 @@ if "messages" not in st.session_state:
 if "analysis_result" not in st.session_state:
     st.session_state.analysis_result = None
 
-# TABS
+# PESTAÑAS
 tab1, tab2 = st.tabs(["Portal del Candidato", "Panel del Evaluador"])
 
 with tab1:
-    # --- CANDIDATE FLOW ---
+    # --- FLUJO DEL CANDIDATO ---
     
     if st.session_state.step == "INPUT":
         st.markdown("### 👋 Hola, bienvenido")
         st.write("Por favor, introduce tu nombre, DNI y los datos requeridos para comenzar la evaluación técnica.")
         
-        # Identity Inputs
+        # Entradas de Identidad
         c_name, c_last, c_dni = st.columns(3)
         with c_name:
             first_name = st.text_input("Nombre", key="input_name", placeholder="Ej: Pedro")
@@ -173,7 +173,7 @@ with tab1:
         with c_dni:
             dni = st.text_input("DNI", key="input_dni", placeholder="Ej: 12345678Z")
 
-        # Technical Inputs
+        # Entradas Técnicas
         col1, col2 = st.columns(2)
         with col1:
             st.markdown("#### 📄 Oferta de Empleo")
@@ -201,7 +201,7 @@ with tab1:
                             st.session_state.current_eval_id = data["evaluation_id"]
                             
                             if data["discarded"]:
-                                st.session_state.step = "FINISHED" # Or show results then finish
+                                st.session_state.step = "FINISHED" # O mostrar resultados y luego terminar
                             else:
                                 st.session_state.step = "INTERVIEW"
                             st.rerun()
@@ -214,7 +214,7 @@ with tab1:
         st.markdown("### 💬 Entrevista Técnica")
         st.info("El sistema ha detectado algunos puntos por aclarar. Por favor responde al asistente.")
         
-        # Initialize Chat if empty
+        # Inicializar Chat si está vacío
         if not st.session_state.messages:
             with st.spinner("Iniciando entrevista..."):
                 try:
@@ -225,7 +225,7 @@ with tab1:
                 except:
                     st.error("Error al iniciar entrevista")
 
-        # Chat Interface
+        # Interfaz de Chat
         for msg in st.session_state.messages:
             role = msg["role"]
             avatar = "🤖" if role == "assistant" else "👤"
@@ -262,11 +262,11 @@ with tab1:
     elif st.session_state.step == "FINISHED":
         st.markdown("### 🏁 Resultados de la Evaluación")
         
-        # Fetch latest data
+        # Obtener datos más recientes
         try:
-             # Just use the audit endpoint response or fetch? backend doesn't have a specific get single yet, 
-             # but audit returns the full updated result.
-             # Ideally we would call audit again or have a get, but for now we assume audit updated the file.
+             # ¿Simplemente usar la respuesta del endpoint de auditoría o hacer fetch? el backend aún no tiene un get single específico, 
+             # pero audit devuelve el resultado completo actualizado.
+             # Idealmente llamaríamos a audit de nuevo o tendríamos un get, pero por ahora asumimos que audit actualizó el archivo.
              pass
         except:
             pass
@@ -280,7 +280,7 @@ with tab1:
             st.rerun()
 
 with tab2:
-    # --- EVALUATOR PANEL ---
+    # --- PANEL DEL EVALUADOR ---
     st.markdown("### 📋 Informe Ejecutivo de Candidatos")
     
     col_refresh, col_spacer = st.columns([1, 5])
@@ -295,10 +295,10 @@ with tab2:
             if evals:
                 df = pd.DataFrame(evals)
                 
-                # Map boolean discarded to user-friendly status
+                # Mapear descartado booleano a estado user-friendly
                 df["discarded"] = df["discarded"].apply(lambda x: "Descartado" if x else "Apto")
                 
-                # Rename columns for display
+                # Renombrar columnas para mostrar
                 df_display = df.rename(columns={
                     "candidate_name": "Candidato", 
                     "score": "Score Final", 
@@ -307,7 +307,7 @@ with tab2:
                     "timestamp": "Fecha"
                 })
                 
-                # Interactive Table
+                # Tabla Interactiva
                 event = st.dataframe(
                     df_display[["Fecha", "Candidato", "Score Final", "Estado", "Requisitos"]],
                     use_container_width=True,
@@ -316,7 +316,7 @@ with tab2:
                     on_select="rerun"
                 )
                 
-                # Check selection
+                # Comprobar selección
                 if len(event.selection.rows) > 0:
                     selected_index = event.selection.rows[0]
                     selected_id = evals[selected_index]["id"]
@@ -324,7 +324,7 @@ with tab2:
                     st.markdown("---")
                     st.markdown(f"### 📝 Detalle Ejecutivo: {evals[selected_index]['candidate_name']}")
                     
-                    # Fetch Detail
+                    # Obtener Detalle
                     try:
                         detail_resp = requests.get(f"{EVALUATIONS_URL}/{selected_id}")
                         if detail_resp.status_code == 200:
@@ -332,7 +332,7 @@ with tab2:
                             eval_data = data["evaluation"]
                             transcript = data["transcript"]
                             
-                            # Header Metrics
+                            # Métricas de Cabecera
                             m1, m2, m3 = st.columns(3)
                             with m1:
                                 st.metric("Score Final", f"{eval_data.get('score', 0):.1f}%")
@@ -351,17 +351,17 @@ with tab2:
                             else:
                                 st.success("✅ Sin señales de alerta críticas.")
 
-                            # Insight Key Points
+                            # Puntos Clave
                             key_points = eval_data.get("key_points", [])
                             if key_points:
                                 st.info("💡 **Puntos Clave de la Entrevista:**")
                                 for kp in key_points:
                                     st.markdown(f"- {kp}")
 
-                            # Requirements Analysis
+                            # Análisis de Requisitos
                             st.markdown("#### 🔍 Análisis de Requisitos")
                             
-                            # Create comparison lists
+                            # Crear listas de comparación
                             req_data = []
                             for r in eval_data.get("matching_requirements", []):
                                 req_data.append({"Requisito": r, "Estado": "Cumplido ✅"})
@@ -371,7 +371,7 @@ with tab2:
                             if req_data:
                                 st.table(req_data)
                             
-                            # Transcript Expander
+                            # Expansor de Transcripción
                             with st.expander("💬 Ver Transcripción Completa"):
                                 st.text(transcript)
                                 
