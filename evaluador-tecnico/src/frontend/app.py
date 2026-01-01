@@ -132,11 +132,8 @@ with col_head2:
 
 st.markdown("---")
 
-# Configuración URL Backend
-if os.getenv("DOCKER_ENV"):
-    BACKEND_HOST = "http://backend:8000"
-else:
-    BACKEND_HOST = "http://localhost:8000"
+# Backend URL configuration
+BACKEND_HOST = os.getenv("BACKEND_URL", "http://localhost:8000")
     
 ANALYZE_URL = f"{BACKEND_HOST}/analyze"
 INTERVIEW_URL = f"{BACKEND_HOST}/interview"
