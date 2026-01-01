@@ -243,32 +243,50 @@ with tab1:
                 except:
                     st.error("Error al iniciar entrevista")
 
-        # Interfaz de Chat
+        # Interfaz de Chat (Estilo Formulario Secuencial)
         for msg in st.session_state.messages:
             role = msg["role"]
             avatar = "🤖" if role == "assistant" else "👤"
             with st.chat_message(role, avatar=avatar):
                 st.write(msg["content"])
 
-        if prompt := st.chat_input("Tu respuesta..."):
+        # Input Inline (No pegado abajo)
+        st.markdown("---")
+        with st.form(key="chat_form", clear_on_submit=True):
+            col_input, col_btn = st.columns([6, 1])
+            with col_input:
+                user_input = st.text_input("Tu respuesta:", placeholder="Escribe aquí...", label_visibility="collapsed")
+            with col_btn:
+                submit_btn = st.form_submit_button("Enviar ➢", use_container_width=True)
+
+        if submit_btn and user_input:
+            prompt = user_input
             st.session_state.messages.append({"role": "user", "content": prompt})
-            with st.chat_message("user", avatar="👤"):
-                st.write(prompt)
-            
+            st.rerun() # Rerun to show user message immediately before processing
+
+        # Processing logic (Check last message)
+        if st.session_state.messages and st.session_state.messages[-1]["role"] == "user":
+            # This block runs after the rerun above renders the user message
+            last_msg = st.session_state.messages[-1]["content"]
             with st.chat_message("assistant", avatar="🤖"):
                 with st.spinner("Pensando..."):
                     payload = {
                         "evaluation_id": st.session_state.current_eval_id,
-                        "message": prompt,
+                        "message": last_msg,
                         "history": st.session_state.messages[:-1]
                     }
-                    resp = requests.post(INTERVIEW_URL, json=payload)
-                    if resp.status_code == 200:
-                        reply = resp.json()["response"]
-                        st.write(reply)
-                        st.session_state.messages.append({"role": "assistant", "content": reply})
-                    else:
-                        st.error("Error de comunicación")
+                    try:
+                        resp = requests.post(INTERVIEW_URL, json=payload)
+                        if resp.status_code == 200:
+                            reply = resp.json()["response"]
+                            st.write(reply)
+                            st.session_state.messages.append({"role": "assistant", "content": reply})
+                            # Force rerun to save state/show nicely
+                            # st.rerun() # Optional, but helps clean UI
+                        else:
+                            st.error("Error de comunicación")
+                    except Exception as e:
+                        st.error(f"Error: {e}")
 
         st.markdown("---")
         if st.button("Finalizar Entrevista"):
