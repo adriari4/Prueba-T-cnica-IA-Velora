@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  evaluador_app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hr_evaluador
+    ports:
+      - "8501:8501"
+      - "8000:8000"
+    volumes:
+      - ./evaluador-tecnico/data:/app/evaluador-tecnico/data
+    env_file:
+      - .env
+    environment:
+      - DOCKER_ENV=true
+      - BACKEND_URL=http://localhost:8000
