@@ -67,6 +67,7 @@ class AnalysisResult(BaseModel):
     score: float = Field(description="Puntuación de 0 a 100.")
     discarded: bool = Field(description="True si se incumple un requisito obligatorio que NO es 'not_found'.")
     total_requirements: int = Field(description="Número total de requisitos identificados.")
+    red_flags: List[str] = Field(default=[], description="Lista de alertas. SI DESCARTADO: Debe incluir 'DESCARTADO POR REQUISITO OBLIGATORIO: <Nombe>'")
 
 class AnalyzeRequest(BaseModel):
     cv_text: str
@@ -95,6 +96,7 @@ REGLAS CRÍTICAS:
 3. Lógica de Descarte:
     - Si hay al menos un requisito OBLIGATORIO en `unmatching` -> `discarded` = true.
     - En cualquier otro caso -> `discarded` = false.
+    - IMPORTANTE: Si `discarded` = true, DEBES añadir en `red_flags` la frase: "DESCARTADO POR REQUISITO OBLIGATORIO: [Nombre del Requisito]".
 4. Cálculo de Score:
     - Si `discarded` es true -> Score = 0.
     - Si `discarded` es false -> Score = (len(matching) / len(total_requisitos)) * 100.
@@ -279,7 +281,7 @@ PROCEDIMIENTO:
 2. Si el candidato confirma tener la experiencia requerida, mueve el requisito a `matching_requirements`.
 3. Si el candidato confirma NO tener la experiencia:
     - Muévelo a `unmatching_requirements`.
-    - Si ese requisito era OBLIGATORIO, establece `discarded` = true.
+    - Si ese requisito era OBLIGATORIO, establece `discarded` = true y AÑADE A `red_flags`: "DESCARTADO POR REQUISITO OBLIGATORIO: [Requisito]".
 4. DETECCIÓN DE RED FLAGS:
     - Identifica contradicciones directas entre CV y respuestas.
     - Respuestas excesivamente cortas o vagas.
