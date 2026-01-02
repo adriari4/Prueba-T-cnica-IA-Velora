@@ -90,13 +90,14 @@ REGLAS CRÍTICAS:
 1. Identificación de Requisitos: Separa la oferta en unidades individuales.
 2. Clasificación:
     - `matching`: Cumple explícitamente.
-    - `unmatching`: Existe EVIDENCIA CLARA Y EXPLICITA de que NO cumple (ej. pide 5 años y el CV dice "1 año", o dice "No se nada de X").
-    - `not_found`: SI NO SE MENCIONA, ES `not_found`. PROHIBIDO INFERIR QUE NO LO TIENE POR OMISIÓN. Ante la duda, SIEMPRE `not_found`.
-3. Lógica de Descarte (Fase 1):
-    - Si un requisito OBLIGATORIO es `unmatching` (no cumple), `discarded` = true.
-    - Si un requisito OBLIGATORIO es `not_found` (no mencionado), `discarded` = false (se preguntará en la entrevista).
-4. Cálculo de Score: (Requisitos cumplidos / Total requisitos) * 100.
-    - Los `not_found` cuentan como 0 para el score por ahora.
+    - `unmatching`: Existe EVIDENCIA CLARA Y EXPLICITA de que NO cumple. (Si es OBLIGATORIO -> DESCARTAR).
+    - `not_found`: SI NO SE MENCIONA, ES `not_found`. (NO DESCARTAR, se preguntará).
+3. Lógica de Descarte:
+    - Si hay al menos un requisito OBLIGATORIO en `unmatching` -> `discarded` = true.
+    - En cualquier otro caso -> `discarded` = false.
+4. Cálculo de Score:
+    - Si `discarded` es true -> Score = 0.
+    - Si `discarded` es false -> Score = (len(matching) / len(total_requisitos)) * 100.
 """
     
     messages = [
@@ -111,6 +112,23 @@ REGLAS CRÍTICAS:
         # Sobrescribir/Inyectar Datos de Identidad Explícitos
         result["candidate_name"] = full_name
         result["dni"] = request.dni
+
+        # Lógica de Cálculo de Score Robusta (Python)
+        # Evitamos confiar en las matemáticas del LLM
+        matching = result.get("matching_requirements", [])
+        unmatching = result.get("unmatching_requirements", [])
+        not_found = result.get("not_found_requirements", [])
+        
+        total_reqs = len(matching) + len(unmatching) + len(not_found)
+        result["total_requirements"] = total_reqs
+        
+        if result.get("discarded", False):
+            result["score"] = 0.0
+        else:
+            if total_reqs > 0:
+                result["score"] = round((len(matching) / total_reqs) * 100, 1)
+            else:
+                result["score"] = 0.0
         
         # Generar ID Único
         eval_id = str(uuid.uuid4())
@@ -264,10 +282,11 @@ PROCEDIMIENTO:
     - Si ese requisito era OBLIGATORIO, establece `discarded` = true.
 4. DETECCIÓN DE RED FLAGS:
     - Identifica contradicciones directas entre CV y respuestas.
-    - Respuestas excesivamente cortas o vagas ("sí, sé de eso" sin detalles).
+    - Respuestas excesivamente cortas o vagas.
     - Falta de conocimiento en conceptos básicos de los requisitos que dice tener.
-5. Recalcula el score final (Cumplidos / Totales * 100).
-6. Genera `key_points` y `red_flags`.
+5. Recalcula el score final:
+    - Si `discarded` es true -> Score = 0.
+    - Si `discarded` es false -> Score = (len(matching) / len(total)) * 100.
 
 JSON INICIAL:
 {json.dumps(initial_eval_data)}
@@ -286,10 +305,25 @@ TRANSCRIPCIÓN:
         # Guardar Evaluación Final (Sobrescribir inicial para ser el registro principal)
         result["evaluation"]["candidate_name"] = initial_eval_data.get("candidate_name", "Unknown") # preservar nombre
         
-        # ¿Fusionar campos de auditoría en el json principal para persistencia también? 
-        # Idealmente guardamos toda la estructura. Empezaremos guardando toda la estructura AuditResult O fusionar.
+        # Recálculo Robusto de Score en Auditoría
+        eval_data_res = result["evaluation"]
+        matching = eval_data_res.get("matching_requirements", [])
+        unmatching = eval_data_res.get("unmatching_requirements", [])
+        not_found = eval_data_res.get("not_found_requirements", []) # Debería estar vacío o casi vacío tras entrevista
+        
+        total_reqs = len(matching) + len(unmatching) + len(not_found)
+        eval_data_res["total_requirements"] = total_reqs
+        
+        if eval_data_res.get("discarded", False):
+            eval_data_res["score"] = 0.0
+        else:
+            if total_reqs > 0:
+                eval_data_res["score"] = round((len(matching) / total_reqs) * 100, 1)
+            else:
+                eval_data_res["score"] = 0.0
+
         # Para mantener compatibilidad con lecturas de AnalysisResult en otros lugares, guardaremos campos en el dict principal.
-        final_data = result["evaluation"]
+        final_data = eval_data_res
         final_data["key_points"] = result.get("key_points", [])
         final_data["red_flags"] = result.get("red_flags", [])
         
