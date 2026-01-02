@@ -30,6 +30,14 @@ El núcleo del sistema utiliza LangChain para garantizar un procesamiento agnós
 
 Tras la entrevista, el sistema procesa la transcripción y actualiza la puntuación final (ej. de un 50% inicial a un 75% si se valida un requisito extra en la charla).
 
+### 3. Informe Ejecutivo
+
+El evaluador dispone de un panel privado donde, al seleccionar a un candidato por su identidad, puede visualizar:
+
+*   **Estado Final**: Apto o Descartado por requisito obligatorio.
+*   **Evolución del Score**: Comparativa entre la fase de análisis de CV y el resultado tras la entrevista.
+*   **Evidencia Técnica**: Desglose detallado de requisitos cumplidos y confirmados por voz/chat.
+
 ## Ejecución con Docker
 
 El proyecto está completamente dockerizado para permitir una ejecución inmediata en cualquier entorno.
@@ -49,16 +57,7 @@ El proyecto está completamente dockerizado para permitir una ejecución inmedia
 3.  **Acceso**:
     *   **Aplicación Web (Streamlit)**: [http://localhost:8501](http://localhost:8501)
     *   **Documentación API (FastAPI)**: [http://localhost:8000/docs](http://localhost:8000/docs)
-
-## Informe Ejecutivo
-
-El evaluador dispone de un panel privado donde, al seleccionar a un candidato por su identidad, puede visualizar:
-
-*   **Estado Final**: Apto o Descartado por requisito obligatorio.
-*   **Evolución del Score**: Comparativa entre la fase de análisis de CV y el resultado tras la entrevista.
-*   **Evidencia Técnica**: Desglose detallado de requisitos cumplidos y confirmados por voz/chat.
-
-Desarrollado como solución técnica de evaluación de talento.
+      
 
 ## Desarrollo Local
 
